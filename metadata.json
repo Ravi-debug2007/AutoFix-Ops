@@ -1,0 +1,6 @@
+{
+  "name": "AutoFix Ops",
+  "description": "Autonomous bug-fixing operations platform with error ingestion, dedup, guardrails, Gemini 3.1 Pro diagnosis, patch verification, and PR creation.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

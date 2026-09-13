@@ -1,0 +1,106 @@
+{
+  "entities": {
+    "ErrorEvent": {
+      "title": "ErrorEvent",
+      "description": "Represents an ingested, deduplicated error event in the autofix pipeline",
+      "type": "object",
+      "properties": {
+        "signature": { "type": "string", "description": "Canonical deduplication signature" },
+        "errorType": { "type": "string", "description": "Class or type of error" },
+        "message": { "type": "string", "description": "Error message" },
+        "normalizedFilePath": { "type": "string", "description": "Normalized repository-relative file path" },
+        "lineNumber": { "type": "number", "description": "Line number where error occurred" },
+        "stackTrace": { "type": "string", "description": "Raw or formatted stack trace" },
+        "repository": { "type": "string", "description": "Target git repository" },
+        "targetBranch": { "type": "string", "description": "Target git branch" },
+        "source": { "type": "string", "description": "Ingestion source (sentry, github_actions, log_shipper, manual)" },
+        "status": { "type": "string", "description": "Current pipeline status" },
+        "occurrenceCount": { "type": "number", "description": "Number of times this error occurred" },
+        "firstSeen": { "type": "string", "description": "ISO timestamp of first occurrence" },
+        "lastSeen": { "type": "string", "description": "ISO timestamp of last occurrence" },
+        "isRegression": { "type": "boolean", "description": "Whether this error reopened after prior resolution" },
+        "denialReason": { "type": "string", "description": "Reason if blocked by gate" }
+      },
+      "required": ["signature", "errorType", "message", "source", "status", "occurrenceCount", "firstSeen", "lastSeen"]
+    },
+    "StageTransition": {
+      "title": "StageTransition",
+      "description": "Immutable history record for each pipeline stage progression",
+      "type": "object",
+      "properties": {
+        "eventId": { "type": "string", "description": "Associated error event ID" },
+        "fromStage": { "type": "string", "description": "Previous pipeline stage" },
+        "toStage": { "type": "string", "description": "Next pipeline stage" },
+        "timestamp": { "type": "string", "description": "ISO timestamp of the transition" },
+        "actor": { "type": "string", "description": "Agent, user, or trigger that caused transition" },
+        "reason": { "type": "string", "description": "Optional notes or outcome summary" }
+      },
+      "required": ["eventId", "fromStage", "toStage", "timestamp", "actor"]
+    },
+    "PullRequest": {
+      "title": "PullRequest",
+      "description": "Information about PR created for a fixed error event",
+      "type": "object",
+      "properties": {
+        "eventId": { "type": "string", "description": "Associated error event ID" },
+        "prNumber": { "type": "number", "description": "GitHub PR number" },
+        "prUrl": { "type": "string", "description": "Direct URL to GitHub PR" },
+        "branchName": { "type": "string", "description": "Branch name pushed for PR" },
+        "title": { "type": "string", "description": "Title of the PR" },
+        "body": { "type": "string", "description": "Body description of the PR" },
+        "status": { "type": "string", "description": "Status of the PR (open, merged, closed)" },
+        "createdAt": { "type": "string", "description": "ISO creation timestamp" }
+      },
+      "required": ["eventId", "prNumber", "prUrl", "branchName", "title", "status", "createdAt"]
+    },
+    "AuditLog": {
+      "title": "AuditLog",
+      "description": "Audit trail log of gate evaluations, approvals, and actions",
+      "type": "object",
+      "properties": {
+        "eventId": { "type": "string", "description": "Associated error event ID if any" },
+        "action": { "type": "string", "description": "Action performed" },
+        "actor": { "type": "string", "description": "Actor executing the action" },
+        "reason": { "type": "string", "description": "Reason or context" },
+        "timestamp": { "type": "string", "description": "ISO timestamp" }
+      },
+      "required": ["action", "actor", "timestamp"]
+    },
+    "Settings": {
+      "title": "Settings",
+      "description": "Global operational parameters and guardrails",
+      "type": "object",
+      "properties": {
+        "budgetCap": { "type": "number", "description": "Maximum auto-fix runs allowed per window" },
+        "budgetWindowMinutes": { "type": "number", "description": "Sliding budget window duration in minutes" },
+        "denylistPatterns": { "type": "string", "description": "Glob patterns of protected paths" },
+        "sandboxModeLabel": { "type": "string", "description": "Description of current sandbox environment" },
+        "isPaused": { "type": "boolean", "description": "Global pause toggle for auto-fix pipeline" },
+        "authAllowlist": { "type": "string", "description": "Comma-separated emails authorized to sign in" }
+      },
+      "required": ["budgetCap", "budgetWindowMinutes", "isPaused"]
+    }
+  },
+  "firestore": {
+    "/error_events/{eventId}": {
+      "schema": "ErrorEvent",
+      "description": "Collection of all ingested and deduplicated error events"
+    },
+    "/stage_transitions/{transitionId}": {
+      "schema": "StageTransition",
+      "description": "Collection of chronological pipeline stage movements"
+    },
+    "/pull_requests/{prId}": {
+      "schema": "PullRequest",
+      "description": "Collection of GitHub pull requests generated by autofix"
+    },
+    "/audit_logs/{logId}": {
+      "schema": "AuditLog",
+      "description": "Collection of security and operational audit entries"
+    },
+    "/settings/{settingId}": {
+      "schema": "Settings",
+      "description": "Global configuration document (id: global)"
+    }
+  }
+}
